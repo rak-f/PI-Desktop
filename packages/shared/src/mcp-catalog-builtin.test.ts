@@ -6,8 +6,8 @@ describe("BUILTIN_MCP_CATALOG", () => {
   it("is valid with zero warnings and unique ids", () => {
     const { catalog, warnings } = validateMcpCatalogFile(BUILTIN_MCP_CATALOG);
     expect(warnings).toEqual([]);
-    expect(catalog.servers).toHaveLength(15);
-    expect(new Set(catalog.servers.map((entry) => entry.id)).size).toBe(15);
+    expect(catalog.servers).toHaveLength(16);
+    expect(new Set(catalog.servers.map((entry) => entry.id)).size).toBe(16);
   });
 
   it("keeps the offline-first promise: at least five zero-config entries", () => {
@@ -15,6 +15,12 @@ describe("BUILTIN_MCP_CATALOG", () => {
       (entry) => !(entry.requiredEnv?.length ?? 0),
     );
     expect(zeroConfig.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it("keeps the Firecrawl key in the Authorization header, not in the endpoint URL", () => {
+    const firecrawl = BUILTIN_MCP_CATALOG.servers.find((entry) => entry.id === "firecrawl");
+    expect(firecrawl?.url).toBe("https://mcp.firecrawl.dev/v2/mcp");
+    expect(firecrawl?.headers?.Authorization).toBe("Bearer ${FIRECRAWL_API_KEY}");
   });
 
   it("uses a cwd-relative filesystem root instead of a shell-only tilde", () => {
